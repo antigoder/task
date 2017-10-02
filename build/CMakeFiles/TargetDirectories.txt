@@ -1,0 +1,3 @@
+/Users/SaltFish/workspace/task/build/CMakeFiles/edit_cache.dir
+/Users/SaltFish/workspace/task/build/CMakeFiles/rebuild_cache.dir
+/Users/SaltFish/workspace/task/build/CMakeFiles/main.dir
