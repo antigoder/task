@@ -2,21 +2,19 @@
 
 Log::Log() {
   mutex_ = PTHREAD_MUTEX_INITIALIZER;
-  cond_ = PTHREAD_COND_INITIALIZER;
 
   Init();
-
 }
 
 Log::~Log() {
   pthread_mutex_destroy(&mutex_);
-  pthread_cond_destroy(&cond_);
 }
 
 int Log::Init(log_level_t level, const std::string &filename, uint64_t line_size,
               uint64_t rotate_size) {
   max_line_size_ = line_size;
   level_ = level;
+  log_rotate_size_ = rotate_size * 1024ul * 1024ul;
 
   fd_ = fileno(stdout); // default log output
 
@@ -27,6 +25,14 @@ int Log::Init(log_level_t level, const std::string &filename, uint64_t line_size
     fprintf(stderr, "Open log file failed.");
     return -1;
   }
+
+  struct stat filestat;
+  if (fstat(fd_, &filestat) < 0) {
+    fprintf(stderr, "Get file stat failed");
+    return -2;
+  }
+  log_cur_size_ = filestat.st_size;
+
   return 0;
 }
 
@@ -55,14 +61,48 @@ int Log::WriteLog(log_level_t level, const char *file,
   
   buf[len++] = '\n';
   
+  pthread_mutex_lock(&mutex_);
+
   len = util::writen(fd_, buf, len);
   if (len < 0) {
     fprintf(stderr, "written log to file failed. len:%d", len);
   }
+
+  log_cur_size_ += len;
+  if (log_cur_size_ >= log_rotate_size_) {
+    rotate(std::string(file, strlen(file)));
+  }
+
+  pthread_mutex_unlock(&mutex_);
+
   return len;
 }
 
 // private
+
+int Log::rotate(const std::string &filename) {
+  if (fd_ < 3) {  // ignore stdin stdout stderr
+    fprintf(stderr, "Invaild fd:%d", fd_);
+    return 0;
+  }
+  
+  std::string tm = util::get_format_time("%Y%m%d-%H%M%S");
+  std::string rotate_name = filename + "." + tm;
+  if (rename(filename.c_str(), rotate_name.c_str()) < 0) {
+    fprintf(stderr, "Rename filename failed");
+    return -1;
+  }
+  close(fd_);
+
+  fd_ = open(filename.c_str(), O_CREAT | O_RDWR | O_APPEND, 0664);
+  if (fd_ < 0) {
+    fprintf(stderr, "Open new log file failed");
+    return -2;
+  }
+  
+  return 0;
+}
+
 std::string Log::get_log_level(log_level_t level) {
   std::string log_level = "DEBUG";
   switch (level) {

@@ -23,6 +23,7 @@ TaskPool::~TaskPool() {
 }
 
 bool TaskPool::Push(task_t *task) {
+  LOG_DEBUG("push test...");
   pthread_mutex_lock(&mutex_);
   if (task == NULL) {
     LOG_WARN("Can not push a NULL task");
@@ -56,6 +57,7 @@ bool TaskPool::Push(task_t *task) {
 }
 
 task_t * TaskPool::Pop() {
+  LOG_DEBUG("POP TEST...");
   pthread_mutex_lock(&mutex_);
   while (head_ == NULL) {
     LOG_DEBUG("task queue is empty, waitting...");

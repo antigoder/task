@@ -9,6 +9,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 
 typedef enum log_level {
@@ -35,15 +36,16 @@ class Log {
   Log();
   ~Log();
 
+  int rotate(const std::string &filename);
   std::string get_log_level(log_level_t level);
 
   int fd_;
   int max_line_size_;
   log_level_t level_;
-  uint64_t curr_log_size_;
+  uint64_t log_cur_size_;
+  uint64_t log_rotate_size_;
 
   pthread_mutex_t mutex_;
-  pthread_cond_t  cond_;
 
 };
 
