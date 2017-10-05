@@ -1,6 +1,7 @@
 #ifndef LOG_H_
 #define LOG_H_
 
+#include <deque>
 #include <util.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -11,6 +12,7 @@
 #include <sys/syscall.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/select.h>
 
 typedef enum log_level {
   ERROR = 0,
@@ -26,8 +28,8 @@ class Log {
     return &log;
   }
 
-  int Init(log_level_t level = DEBUG, const std::string &filename = "", uint64_t line_size = 256,
-           uint64_t rotate_size = 64);
+  int Init(log_level_t level = DEBUG, const std::string &filename = "",
+           uint64_t line_size = 256, uint64_t rotate_size = 64);
 
   int WriteLog(log_level_t level, const char *file,
                const char *func, size_t line, const char* format, ...); 
@@ -36,16 +38,23 @@ class Log {
   Log();
   ~Log();
 
+  static void * dump_to_file(void *msg);
+
+  int open_log_file(const std::string &filename);
+  int start_dump_thread();
   int rotate(const std::string &filename);
   std::string get_log_level(log_level_t level);
 
-  int fd_;
+  static pthread_mutex_t mutex_;
+  static pthread_cond_t cond_;
+  static char *msgbuf_;
+  static int fd_;
+
   int max_line_size_;
   log_level_t level_;
   uint64_t log_cur_size_;
   uint64_t log_rotate_size_;
 
-  pthread_mutex_t mutex_;
 
 };
 
