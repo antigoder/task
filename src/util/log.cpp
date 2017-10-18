@@ -128,7 +128,7 @@ void * Log::dump_to_file(void *msg) {
   struct timeval tv;
   
   tv.tv_sec = 0;
-  tv.tv_usec = 50000;
+  tv.tv_usec = 5000;
 
   while (true) {
     pthread_mutex_lock(&mutex_);

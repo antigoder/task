@@ -2,13 +2,14 @@
 #include <task.h>
 #include <producer.h>
 #include <consumer.h>
+#include <storage.h>
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
   
   Log::GetInstance()->Init(DEBUG);
-
+  /*
   task_pool_t task_pool;
 
   Producer *producer1 = new Producer(&task_pool);
@@ -19,10 +20,15 @@ int main(int argc, char* argv[]) {
   producer2->Start();
   consumer1->Start();
   
-  
   while (true) {
     sleep(10);
   }
-  
+  */
+
+  Storage *st = Storage::GetInstance();
+  st->DBTest();
+
+  usleep(10000);
+
   return 0;
 }
