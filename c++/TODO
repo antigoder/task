@@ -1,0 +1,2 @@
+1, To reduce disk io, log msg better wirte into memery, and create a pthread only read this msg queue from memery, then dump into log file
+
