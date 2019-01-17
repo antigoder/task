@@ -1,1 +1,1 @@
-# some lib coding by mysql, just used to backups
+# some lib coding by myself, just used to backups
